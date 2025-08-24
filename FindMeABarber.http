@@ -1,6 +1,7 @@
 @FindMeABarber_HostAddress = http://localhost:5092
 
-GET {{FindMeABarber_HostAddress}}/weatherforecast/
+GET {{FindMeABarber_HostAddress}}/
+Content-Type: application/json
 Accept: application/json
 
 ###

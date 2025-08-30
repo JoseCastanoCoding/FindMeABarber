@@ -10,6 +10,7 @@ namespace FindMeABarber.Services
         public DbService(IConfiguration configuration)
         {
             _dbConnection = new NpgsqlConnection(configuration.GetConnectionString("FindMeABarberTest"));
+            _dbConnection.Open();
         }
 
         public async Task<T> GetAsync<T>(string command, object parameters)

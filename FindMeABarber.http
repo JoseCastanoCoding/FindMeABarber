@@ -1,6 +1,13 @@
 @FindMeABarber_HostAddress = https://localhost:7043
 
-GET {{FindMeABarber_HostAddress}}/
+GET {{FindMeABarber_HostAddress}}/barbers
+Content-Type: application/json
+Accept: application/json
+
+###
+
+
+GET {{FindMeABarber_HostAddress}}/barbers/1
 Content-Type: application/json
 Accept: application/json
 
@@ -11,13 +18,19 @@ POST {{FindMeABarber_HostAddress}}/barbers
 Content-Type: application/json
 Accept: application/json
 {
-    "barberId": 1,
-    "barberName": "John",
-    "barberSurname": "Doe",
-    "barberAge": 30,
-    "barberAddress": "123 Main St",
-    "barberMobileNumber": "555-1234"
+    "barberid": 1,
+    "barbername": "John",
+    "barbersurname": "Doe",
+    "barberage": 30,
+    "barberaddress": "123 Main St",
+    "barbermobilenumber": "555-1234"
 }
 
+
+###
+
+DELETE {{FindMeABarber_HostAddress}}/barbers/1
+Content-Type: application/json
+Accept: application/json
 
 ###

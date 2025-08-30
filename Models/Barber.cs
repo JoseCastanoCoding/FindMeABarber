@@ -9,6 +9,5 @@
         public string? BarberAddress { get; set; }
         public string? BarberMobileNumber { get; set; }
 
-
     }
 }

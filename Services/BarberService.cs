@@ -15,8 +15,8 @@ namespace FindMeABarber.Services
         {
             var result =
                 await _dbService.EditData(
-                    @"INSERT INTO public.barber (barberId, barberName, barberSurname, barberAge, barberAddress, barberMobileNumber) 
-                        VALUES (@BarberId, @BarberName, @BarberSurname, @BarberAge, @BarberAddress, @BarberMobileNumber)",
+                    @"INSERT INTO public.barber (barberid, barbername, barbersurname, barberage, barberaddress, barbermobilenumber) 
+                    VALUES (@BarberId, @BarberName, @BarberSurname, @BarberAge, @BarberAddress, @BarberMobileNumber)",
                     barber);
 
             return true;

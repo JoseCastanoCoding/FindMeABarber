@@ -13,6 +13,12 @@ namespace FindMeABarber
             // Add services to the container.
             builder.Services.AddAuthorization();
 
+            builder.WebHost.ConfigureKestrel(serverOptions =>
+            {
+                serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(5); // Default is 2 minutes
+                serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(2); // Default is 1 minute
+            });
+
             builder.Services.AddScoped<IDbService, DbService>();
             builder.Services.AddScoped<IBarberService, BarberService>();
 
@@ -43,6 +49,16 @@ namespace FindMeABarber
             {
                 await barberService.CreateBarber(barber);
                 return Results.Created($"/barbers/{barber.BarberId}", barber);
+            });
+
+            app.MapDelete("/barbers/{barberId}", async (int barberId, [FromServices] IBarberService barberService) =>
+            {
+                var deleted = await barberService.DeleteBarber(barberId);
+                if (!deleted)
+                {
+                    return Results.NotFound();
+                }
+                return Results.NoContent();
             });
 
             app.Run();

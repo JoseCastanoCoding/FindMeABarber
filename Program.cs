@@ -1,6 +1,11 @@
 using FindMeABarber.Models;
 using FindMeABarber.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace FindMeABarber
 {
@@ -10,7 +15,39 @@ namespace FindMeABarber
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // CORS setup
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFindMeABarberFrontend",
+                    policy =>
+                    {
+                        policy.WithOrigins("http://localhost:3000")
+                              .AllowAnyHeader()
+                              .AllowAnyMethod();
+                    });
+            });
+
+            builder.Configuration
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: false);
+
+            // JWT Authentication setup
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                    };
+                });
+            
             builder.Services.AddAuthorization();
 
             builder.WebHost.ConfigureKestrel(serverOptions =>
@@ -28,9 +65,34 @@ namespace FindMeABarber
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
-            
+            app.UseCors("AllowFindMeABarberFrontend");
+
+            app.MapGet("/api/hello", () =>
+                Results.Ok(new { message = "Hello from .NET!" }));
+
+            app.MapPost("/api/auth/register", async (RegisterDto dto, UserManager<AppUser> userManager) =>
+            {
+                var user = new AppUser { UserName = dto.Email, Email = dto.Email };
+                var result = await userManager.CreateAsync(user, dto.Password);
+                return result.Succeeded ? Results.Ok() : Results.BadRequest(result.Errors);
+            });
+
+            app.MapPost("/api/auth/login", async (LoginDto dto, UserManager<AppUser> userManager, ITokenService tokenService) =>
+            {
+                var user = await userManager.FindByEmailAsync(dto.Email);
+                if (user != null && await userManager.CheckPasswordAsync(user, dto.Password))
+                {
+                    var token = tokenService.CreateToken(user);
+                    return Results.Ok(new { token });
+                }
+                return Results.Unauthorized();
+            });
+
+            app.MapGet("/api/secure", [Authorize] () => "This is protected!");
+
 
             app.MapGet("/barbers", async ([FromServices] IBarberService barberService) =>
                 await barberService.GetBarberList());

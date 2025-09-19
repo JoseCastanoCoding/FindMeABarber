@@ -11,17 +11,19 @@ namespace FindMeABarber.Services
             _dbService = dbService;
         }
 
-        public async Task<bool> CreateBarber(Barber barber)
+        public async Task<Barber> CreateBarber(Barber barber)
         {
-            var result =
-                await _dbService.EditData(
-                    @"INSERT INTO public.barber (barberid, barbername, barbersurname, barberage, barberaddress, barbermobilenumber) 
-                    VALUES (@BarberId, @BarberName, @BarberSurname, @BarberAge, @BarberAddress, @BarberMobileNumber)",
-                    barber);
+            var sql = @"INSERT INTO public.barber (barbername, barbersurname, barberage, barberaddress, barbermobilenumber)
+                        VALUES (@BarberName, @BarberSurname, @BarberAge, @BarberAddress, @BarberMobileNumber)
+                        RETURNING barberid;";
 
-            return true;
+            // Use _dbService.EditData to insert and get the new id, or add a method to IDbService/DbService to support QuerySingleAsync
+            var newId = await _dbService.GetAsync<int>(sql, barber);
+            barber.BarberId = newId;
+            return barber;
         }
 
+        
         public async Task<List<Barber>> GetBarberList()
         {
             var barberList = await _dbService.GetAll<Barber>(@"SELECT * FROM public.barber", new { });

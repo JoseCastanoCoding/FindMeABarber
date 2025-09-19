@@ -1,7 +1,9 @@
-﻿namespace FindMeABarber.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace FindMeABarber.Models
 {
     public class Barber
-    {
+    {        
         public int BarberId { get; set; }
         public string? BarberName { get; set; }
         public string? BarberSurname { get; set; }
